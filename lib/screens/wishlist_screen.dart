@@ -80,17 +80,24 @@ class _WishlistScreenState extends State<WishlistScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Container(
-                                      width: 56,
-                                      height: 72,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primarySurface,
-                                        borderRadius: BorderRadius.circular(10),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(
+                                        book.coverUrl,
+                                        width: 56,
+                                        height: 72,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          width: 56,
+                                          height: 72,
+                                          color: AppColors.primarySurface,
+                                          child: const Center(
+                                            child: Icon(Icons.menu_book_rounded,
+                                                size: 28,
+                                                color: AppColors.primaryLighter),
+                                          ),
+                                        ),
                                       ),
-                                      child: const Center(
-                                          child: Icon(Icons.menu_book_rounded,
-                                              size: 28,
-                                              color: AppColors.primaryLighter)),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(

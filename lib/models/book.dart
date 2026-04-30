@@ -21,6 +21,7 @@ class Book {
   final bool isOnSale;
   final bool isSoldOut;
   final Color coverColor;
+  final String coverUrl;
 
   const Book({
     required this.id,
@@ -42,6 +43,7 @@ class Book {
     this.tags = const [],
     this.isOnSale = false,
     this.isSoldOut = false,
+    required this.coverUrl,
     this.coverColor = const Color(0xFFE8DCCB),
   });
 }
@@ -76,44 +78,24 @@ const List<Book> allBooks = [
       synopsis: 'Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived.\n\nNora Seed finds herself faced with the possibility of changing her life for a new one, following a different career, undoing old breakups, or realizing her dreams.',
       format: 'E-book', pages: 312, publisher: 'Gramedia Pustaka', releasedDate: 'Feb 14, 2023',
       isbn: '9786020650123', fileSize: 12.5,
-      tags: ['Bestseller', 'Philosophical', 'Time Travel', 'Mental Health'], isOnSale: true),
-  Book(id: '2', title: 'Stellar Echoes', author: 'Elena Rigby', genre: 'Fiction',
+      tags: ['Bestseller', 'Philosophical', 'Time Travel', 'Mental Health'], isOnSale: true,
+      coverUrl: 'https://covers.openlibrary.org/b/id/15164860-L.jpg'),
+  Book(id: '2', title: 'A Little Life', author: 'Hanya Yanagihara', genre: 'Fiction',
       price: 89000, rating: 4.8, reviewCount: 94,
-      synopsis: 'A sweeping science fiction saga about humanity\'s first contact with an alien civilization hidden in the echoes of dying stars.',
-      pages: 428, tags: ['Sci-fi', 'Space', 'Adventure']),
-  Book(id: '3', title: 'Quiet Minds', author: 'Marcus Aurelius', genre: 'Self-help',
+      synopsis: 'It focuses on Jude St. Francis, a brilliant lawyer haunted by severe, unrevealed childhood abuse and chronic pain. The story explores trauma, deep friendship, and the limits of love in overcoming profound psychological damage.',
+      pages: 428, tags: ['Fiction', 'Drama', 'Contemporary'],
+      coverUrl: 'https://covers.openlibrary.org/b/id/14841606-L.jpg'),
+  Book(id: '3', title: 'Black Showman and the Murder in an Obscure Town', author: 'Keigo Higashino', genre: 'Self-help',
       price: 115000, rating: 4.9, reviewCount: 210,
-      synopsis: 'A modern guide to stoic philosophy and mindfulness, drawing on ancient wisdom to navigate the noise of contemporary life.',
-      pages: 256, tags: ['Philosophy', 'Mindfulness', 'Stoicism']),
-  Book(id: '4', title: 'The Hidden Garden', author: 'T.S. Elliott', genre: 'Fiction',
+      synopsis: 'A retired, respected teacher is found murdered in his home, leading his daughter and her uncle, Takeshi—a former "black magician" or "illusionist"—to investigate, as the police investigation stalls.',
+      pages: 256, tags: ['Mystery', 'Thriller'],
+      coverUrl: 'https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1639776770i/59842337.jpg'),
+  Book(id: '4', title: 'Days at the Morisaki Bookshop', author: 'Satoshi Yagisawa', genre: 'Fiction',
       price: 142000, rating: 4.6, reviewCount: 87,
-      synopsis: 'A magical realist tale about a woman who discovers a hidden garden that reflects the emotional landscape of all who enter it.',
-      format: 'Physical', pages: 380, tags: ['Magical Realism', 'Nature', 'Mystery']),
-  Book(id: '5', title: 'Atomic Habits', author: 'James Clear', genre: 'Non-fiction',
-      price: 180000, rating: 4.9, reviewCount: 3200,
-      synopsis: 'A proven framework for building good habits and breaking bad ones. Learn how tiny changes lead to remarkable results.',
-      pages: 320, tags: ['Habits', 'Productivity', 'Self-improvement']),
-  Book(id: '6', title: 'Alchemist', author: 'Paulo Coelho', genre: 'Fiction',
-      price: 95000, rating: 4.7, reviewCount: 5100,
-      synopsis: 'A young Andalusian shepherd embarks on a journey to the Egyptian pyramids after having a recurring dream of finding a treasure there.',
-      pages: 208, tags: ['Inspirational', 'Adventure', 'Philosophy']),
-  Book(id: '7', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', genre: 'Fiction',
-      price: 125000, rating: 4.8, reviewCount: 2400,
-      synopsis: 'Set in the Jazz Age on Long Island, the novel depicts narrator Nick Carraway\'s interactions with mysterious millionaire Jay Gatsby.',
-      format: 'Physical', pages: 180, tags: ['Classic', 'American Literature', 'Drama']),
-  Book(id: '8', title: '1984', author: 'George Orwell', genre: 'Fiction',
-      price: 110000, rating: 4.9, reviewCount: 6700,
-      synopsis: 'A dystopian social science fiction novel and cautionary tale about the dangers of totalitarianism.',
-      format: 'Physical', pages: 328, tags: ['Dystopia', 'Classic', 'Political'], isSoldOut: true),
-  Book(id: '9', title: 'Pride and Prejudice', author: 'Jane Austen', genre: 'Fiction',
-      price: 145000, rating: 4.7, reviewCount: 4300,
-      synopsis: 'A romantic novel of manners that follows the character development of Elizabeth Bennet, the dynamic protagonist.',
-      pages: 432, tags: ['Classic', 'Romance', 'Literature']),
-  Book(id: '10', title: 'Little Women', author: 'Louisa May Alcott', genre: 'Fiction',
-      price: 160000, rating: 4.9, reviewCount: 3800,
-      synopsis: 'Following the lives of the four March sisters—Meg, Jo, Beth, and Amy—detailing their passage from childhood to womanhood.',
-      format: 'Physical', pages: 449, tags: ['Classic', 'Coming-of-age', 'Family']),
-];
+      synopsis: 'The moving international sensation about new beginnings, human connection, and the joy of reading. Hidden in Jimbocho, Tokyo, is a booklover\'s paradise. On a quiet corner in an old wooden building lies a shop filled with hundreds of second-hand books.',
+      format: 'Physical', pages: 380, tags: ['Fiction', 'Contemporary', 'Romance'],
+      coverUrl: 'https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1671208761i/62047992.jpg'),
+  ];
 
 class OrderHistory {
   final String orderId;

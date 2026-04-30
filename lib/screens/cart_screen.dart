@@ -300,16 +300,22 @@ class _CartScreenState extends State<CartScreen> {
           ),
           const SizedBox(width: 14),
           // Cover placeholder
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Container(
+              width: 72,
+              height: 72,
               color: item.book.coverColor.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Center(
-              child: Icon(Icons.menu_book_rounded,
-                  size: 30, color: item.book.coverColor),
+              child: Image.network(
+                item.book.coverUrl,
+                width: 72,
+                height: 72,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Center(
+                  child: Icon(Icons.menu_book_rounded,
+                      size: 30, color: item.book.coverColor),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 14),

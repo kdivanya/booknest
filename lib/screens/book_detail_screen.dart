@@ -86,7 +86,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     // ── Book Cover ──
                     Container(
                       margin: const EdgeInsets.all(32),
-                      height: 200,
+                      height: 260,
                       decoration: BoxDecoration(
                         color: AppColors.primarySurface,
                         borderRadius: BorderRadius.circular(16),
@@ -97,9 +97,31 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                               offset: const Offset(0, 8)),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(Icons.menu_book_rounded,
-                            size: 72, color: AppColors.primaryLighter),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Center(
+                          child: Image.network(
+                            book.coverUrl,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.contain,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: AppColors.primarySurface,
+                                child: const Center(
+                                    child: CircularProgressIndicator(strokeWidth: 2)),
+                              );
+                            },
+                            errorBuilder: (_, __, ___) => Container(
+                              color: AppColors.primarySurface,
+                              child: const Center(
+                                child: Icon(Icons.menu_book_rounded,
+                                    size: 72, color: AppColors.primaryLighter),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
 

@@ -39,40 +39,49 @@ class BookCard extends StatelessWidget {
             Expanded(
               child: Stack(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primarySurface,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16)),
-                    ),
-                    child: Center(
-                      child: book.isSoldOut
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.menu_book_rounded,
-                                    size: 40, color: AppColors.primaryLighter),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.soldOut,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Text('SOLD OUT',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                              ],
-                            )
-                          : const Icon(Icons.menu_book_rounded,
+                  ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: Image.network(
+                      book.coverUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: AppColors.primarySurface,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppColors.primarySurface,
+                        child: const Center(
+                          child: Icon(Icons.menu_book_rounded,
                               size: 48, color: AppColors.primaryLighter),
+                        ),
+                      ),
                     ),
                   ),
+                  if (book.isSoldOut)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.soldOut,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text('SOLD OUT',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ),
                   Positioned(
                     top: 8,
                     right: 8,
@@ -161,6 +170,7 @@ class FeaturedBookCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 280,
+        height: 220,
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -171,68 +181,104 @@ class FeaturedBookCard extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (book.isOnSale)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text('ON SALE TODAY!',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600)),
-              ),
-            const SizedBox(height: 10),
-            Text(book.title,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2)),
-            const SizedBox(height: 4),
-            Text('${book.author} • ${book.genre}',
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
-            const SizedBox(height: 10),
-            Text('Rp ${_fmt(book.price)}',
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text('Details',
-                      style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600)),
-                ),
-                const SizedBox(width: 12),
-                if (book.originalPrice != null)
-                  Text(
-                    'Rp ${_fmt(book.originalPrice!)}',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 13,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: Colors.white.withValues(alpha: 0.6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (book.isOnSale)
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text('ON SALE TODAY!',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600)),
                     ),
+                  const SizedBox(height: 10),
+                  Text(book.title,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1)),
+                  const SizedBox(height: 4),
+                  Text('${book.author} • ${book.genre}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 12)),
+                  const SizedBox(height: 10),
+                  Text('Rp ${_fmt(book.price)}',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text('Details',
+                            style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                      const SizedBox(width: 12),
+                      if (book.originalPrice != null)
+                        Flexible(
+                          child: Text(
+                            'Rp ${_fmt(book.originalPrice!)}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.6),
+                              fontSize: 13,
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: Colors.white.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-              ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                book.coverUrl,
+                width: 90,
+                height: 180,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 90,
+                  height: 180,
+                  color: Colors.white24,
+                  child: const Center(
+                    child: Icon(Icons.menu_book_rounded,
+                        size: 40, color: Colors.white70),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
