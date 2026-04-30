@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'constants/colors.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+  ));
   runApp(const BookNestApp());
 }
 
@@ -23,53 +22,14 @@ class BookNestApp extends StatelessWidget {
       title: 'BookNest',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          brightness: Brightness.light,
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+        scaffoldBackgroundColor: AppColors.bg,
+        textTheme: GoogleFonts.dmSerifDisplayTextTheme().copyWith(
+          bodyLarge: GoogleFonts.inter(fontSize: 14, color: AppColors.textDark),
+          bodyMedium: GoogleFonts.inter(fontSize: 13, color: AppColors.textMid),
+          bodySmall: GoogleFonts.inter(fontSize: 12, color: AppColors.textLight),
         ),
-        scaffoldBackgroundColor: AppColors.bgMain,
-        fontFamily: 'Nunito',
         useMaterial3: true,
-        // AppBar theme
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.bgPurpleLight,
-          elevation: 0,
-          titleTextStyle: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: AppColors.primaryDark,
-          ),
-          iconTheme: IconThemeData(color: AppColors.primaryDark),
-        ),
-        // ElevatedButton theme
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.primaryText,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-        ),
-        // TextField theme
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.borderMid),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.borderMid),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-          ),
-        ),
       ),
       home: const SplashScreen(),
     );

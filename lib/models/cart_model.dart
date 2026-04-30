@@ -3,76 +3,52 @@ import 'book.dart';
 class CartItem {
   final Book book;
   int quantity;
-
-  CartItem({required this.book, this.quantity = 1});
-
-  double get totalPrice => book.price * quantity;
-}
-
-class WishlistItem {
-  final Book book;
   bool isSelected;
-
-  WishlistItem({required this.book, this.isSelected = false});
+  CartItem({required this.book, this.quantity = 1, this.isSelected = true});
+  double get total => book.price * quantity;
 }
 
-// Simple in-memory store (no provider needed for this project scope)
 class AppStore {
-  static final AppStore _instance = AppStore._internal();
-  factory AppStore() => _instance;
-  AppStore._internal();
+  static final AppStore _i = AppStore._();
+  factory AppStore() => _i;
+  AppStore._();
 
-  final List<CartItem> cartItems = [];
-  final List<WishlistItem> wishlistItems = [];
+  final List<CartItem> cart = [];
+  final Set<String> wishlist = {};
+  String currentUser = 'Marceline';
+  String currentEmail = 'marcybelle@booknest.com';
 
   void addToCart(Book book) {
-    final existing = cartItems.where((c) => c.book.id == book.id).toList();
-    if (existing.isNotEmpty) {
-      existing.first.quantity++;
-    } else {
-      cartItems.add(CartItem(book: book));
+    final idx = cart.indexWhere((c) => c.book.id == book.id);
+    if (idx >= 0) { cart[idx].quantity++; } else { cart.add(CartItem(book: book)); }
+  }
+
+  void removeFromCart(String id) => cart.removeWhere((c) => c.book.id == id);
+
+  void increment(String id) {
+    final idx = cart.indexWhere((c) => c.book.id == id);
+    if (idx >= 0) cart[idx].quantity++;
+  }
+
+  void decrement(String id) {
+    final idx = cart.indexWhere((c) => c.book.id == id);
+    if (idx >= 0) {
+      if (cart[idx].quantity > 1) { cart[idx].quantity--; } else { cart.removeAt(idx); }
     }
   }
 
-  void removeFromCart(String bookId) {
-    cartItems.removeWhere((c) => c.book.id == bookId);
+  void clearCart() => cart.clear();
+
+  void toggleWishlist(String id) {
+    if (wishlist.contains(id)) { wishlist.remove(id); } else { wishlist.add(id); }
   }
 
-  void incrementQty(String bookId) {
-    final item = cartItems.where((c) => c.book.id == bookId).toList();
-    if (item.isNotEmpty) item.first.quantity++;
-  }
+  bool isWishlisted(String id) => wishlist.contains(id);
 
-  void decrementQty(String bookId) {
-    final item = cartItems.where((c) => c.book.id == bookId).toList();
-    if (item.isNotEmpty) {
-      if (item.first.quantity > 1) {
-        item.first.quantity--;
-      } else {
-        removeFromCart(bookId);
-      }
-    }
-  }
+  double get selectedTotal =>
+      cart.where((c) => c.isSelected).fold(0, (sum, c) => sum + c.total);
 
-  void addToWishlist(Book book) {
-    final exists = wishlistItems.any((w) => w.book.id == book.id);
-    if (!exists) wishlistItems.add(WishlistItem(book: book));
-  }
+  int get selectedCount => cart.where((c) => c.isSelected).length;
 
-  void removeFromWishlist(String bookId) {
-    wishlistItems.removeWhere((w) => w.book.id == bookId);
-  }
-
-  bool isInWishlist(String bookId) {
-    return wishlistItems.any((w) => w.book.id == bookId);
-  }
-
-  bool isInCart(String bookId) {
-    return cartItems.any((c) => c.book.id == bookId);
-  }
-
-  double get cartTotal =>
-      cartItems.fold(0, (sum, item) => sum + item.totalPrice);
-
-  int get cartCount => cartItems.fold(0, (sum, item) => sum + item.quantity);
+  int get cartCount => cart.fold(0, (sum, c) => sum + c.quantity);
 }

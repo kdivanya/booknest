@@ -1,64 +1,42 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import '../models/book.dart';
-import 'book_card.dart';
 
+// STATELESS WIDGET
 class GenreSection extends StatelessWidget {
   final String genre;
-  final List<Book> books;
-  final Function(Book) onBookTap;
+  final VoidCallback? onTap;
 
-  const GenreSection({
-    super.key,
-    required this.genre,
-    required this.books,
-    required this.onBookTap,
-  });
+  const GenreSection({super.key, required this.genre, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: const BoxDecoration(
-              color: AppColors.bgPurpleLight,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.bgWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36, height: 36,
+              decoration: BoxDecoration(
+                  color: AppColors.primarySurface,
+                  borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.category_outlined,
+                  size: 18, color: AppColors.primary),
             ),
-            child: Text(
-              genre,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.primaryDark,
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 135,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.all(10),
-              itemCount: books.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                return SmallBookCard(
-                  book: books[index],
-                  onTap: () => onBookTap(books[index]),
-                );
-              },
-            ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Text(genre, style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+            const Spacer(),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textLight, size: 18),
+          ],
+        ),
       ),
     );
   }

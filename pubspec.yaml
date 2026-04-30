@@ -2,7 +2,6 @@ name: booknest
 description: Your Cozy Digital Bookstore
 
 publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
@@ -12,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -20,6 +20,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
     - assets/images/

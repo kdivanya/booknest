@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../models/book.dart';
 
-// STATELESS WIDGET — BookCard tidak berubah berdasarkan interaksi
+// STATELESS WIDGET — BookCard grid item
 class BookCard extends StatelessWidget {
   final Book book;
   final VoidCallback onTap;
-  final double width;
-  final double coverHeight;
+  final VoidCallback onWishlist;
+  final bool wishlisted;
 
   const BookCard({
     super.key,
     required this.book,
     required this.onTap,
-    this.width = 120,
-    this.coverHeight = 100,
+    required this.onWishlist,
+    required this.wishlisted,
   });
 
   @override
@@ -22,73 +22,93 @@ class BookCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: width,
         decoration: BoxDecoration(
           color: AppColors.bgCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: AppColors.primaryLighter.withValues(alpha: 0.3),
+              blurRadius: 8, offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cover
-            Container(
-              height: coverHeight,
-              decoration: BoxDecoration(
-                color: AppColors.coverColors[book.coverColorIndex % AppColors.coverColors.length],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(13)),
-              ),
-              child: Center(
-                child: Text(
-                  book.coverEmoji,
-                  style: const TextStyle(fontSize: 36),
-                ),
+            Expanded(
+              child: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primarySurface,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    child: Center(
+                      child: book.isSoldOut
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.menu_book_rounded,
+                                    size: 40, color: AppColors.primaryLighter),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                      color: AppColors.soldOut,
+                                      borderRadius: BorderRadius.circular(20)),
+                                  child: const Text('SOLD OUT', style: TextStyle(
+                                      color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            )
+                          : const Icon(Icons.menu_book_rounded,
+                              size: 48, color: AppColors.primaryLighter),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8, right: 8,
+                    child: GestureDetector(
+                      onTap: onWishlist,
+                      child: Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08), blurRadius: 4)],
+                        ),
+                        child: Icon(
+                          wishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          size: 16,
+                          color: wishlisted ? Colors.red : AppColors.textLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            // Info
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    book.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
-                      height: 1.3,
-                    ),
-                  ),
+                  Row(children: [
+                    const Icon(Icons.star_rounded, size: 12, color: AppColors.star),
+                    const SizedBox(width: 2),
+                    Text('${book.rating}', style: const TextStyle(
+                        fontSize: 11, color: AppColors.star, fontWeight: FontWeight.w500)),
+                  ]),
                   const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const Icon(Icons.star_rounded, size: 11, color: AppColors.star),
-                      const SizedBox(width: 2),
-                      Text(
-                        book.rating.toString(),
-                        style: const TextStyle(fontSize: 10, color: AppColors.star),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Rp ${_formatPrice(book.price)}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.primaryDark,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  Text(book.title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                          color: AppColors.textDark)),
+                  Text(book.author,
+                      style: const TextStyle(fontSize: 11, color: AppColors.textLight)),
+                  const SizedBox(height: 4),
+                  Text('Rp ${_fmt(book.price)}', style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
                 ],
               ),
             ),
@@ -98,55 +118,79 @@ class BookCard extends StatelessWidget {
     );
   }
 
-  String _formatPrice(double price) {
-    if (price >= 1000) {
-      return '${(price / 1000).toStringAsFixed(0)}.000';
-    }
-    return price.toStringAsFixed(0);
-  }
+  String _fmt(double p) => p.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 }
 
-// STATELESS WIDGET — GenreBookCard versi kecil untuk list genre
-class SmallBookCard extends StatelessWidget {
+// STATELESS WIDGET — Featured sale banner
+class FeaturedBookCard extends StatelessWidget {
   final Book book;
   final VoidCallback onTap;
-
-  const SmallBookCard({super.key, required this.book, required this.onTap});
+  const FeaturedBookCard({super.key, required this.book, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 80,
+        width: 280,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+            colors: [Color(0xFF7C5CBF), Color(0xFF5A3E99)],
+          ),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 70,
-              decoration: BoxDecoration(
-                color: AppColors.coverColors[book.coverColorIndex % AppColors.coverColors.length],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(9)),
+            if (book.isOnSale)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('ON SALE TODAY!', style: TextStyle(
+                    color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
               ),
-              child: Center(child: Text(book.coverEmoji, style: const TextStyle(fontSize: 26))),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5),
-              child: Text(
-                book.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 9, color: AppColors.textPrimary, height: 1.2),
-              ),
+            const SizedBox(height: 10),
+            Text(book.title, style: const TextStyle(
+                color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, height: 1.2)),
+            const SizedBox(height: 4),
+            Text('${book.author} • ${book.genre}',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
+            const SizedBox(height: 10),
+            Text('Rp ${_fmt(book.price)}', style: const TextStyle(
+                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                      color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                  child: const Text('Details', style: TextStyle(
+                      color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+                ),
+                const SizedBox(width: 12),
+                if (book.originalPrice != null)
+                  Text('Rp ${_fmt(book.originalPrice!)}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6), fontSize: 13,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: Colors.white.withValues(alpha: 0.6),
+                      )),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  String _fmt(double p) => p.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 }

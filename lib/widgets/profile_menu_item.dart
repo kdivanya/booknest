@@ -1,59 +1,60 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
-// STATELESS WIDGET — ProfileMenuItem hanya display, tidak ada state
+// STATELESS WIDGET
 class ProfileMenuItem extends StatelessWidget {
-  final String label;
   final IconData icon;
+  final String label;
+  final String? badge;
   final VoidCallback? onTap;
   final bool showDivider;
 
   const ProfileMenuItem({
     super.key,
-    required this.label,
     required this.icon,
+    required this.label,
+    this.badge,
     this.onTap,
     this.showDivider = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-            child: Row(
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: AppColors.bgPurpleLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 18, color: AppColors.primaryDark),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 20),
-              ],
-            ),
-          ),
+    return GestureDetector(
+      onTap: onTap ?? () {},
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          border: showDivider
+              ? const Border(bottom: BorderSide(color: AppColors.border))
+              : null,
         ),
-        if (showDivider)
-          const Divider(color: AppColors.border, height: 1, thickness: 1),
-      ],
+        child: Row(
+          children: [
+            Container(
+              width: 36, height: 36,
+              decoration: BoxDecoration(
+                  color: AppColors.primarySurface,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, size: 18, color: AppColors.primary),
+            ),
+            const SizedBox(width: 14),
+            Expanded(child: Text(label,
+                style: const TextStyle(fontSize: 14, color: AppColors.textDark))),
+            if (badge != null)
+              Container(
+                width: 20, height: 20,
+                decoration: const BoxDecoration(
+                    color: AppColors.danger, shape: BoxShape.circle),
+                child: Center(child: Text(badge!, style: const TextStyle(
+                    color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold))),
+              ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right_rounded,
+                color: AppColors.textLight, size: 18),
+          ],
+        ),
+      ),
     );
   }
 }
