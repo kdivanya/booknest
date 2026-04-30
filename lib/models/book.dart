@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Book {
   final String id;
   final String title;
@@ -18,6 +20,7 @@ class Book {
   final List<String> tags;
   final bool isOnSale;
   final bool isSoldOut;
+  final Color coverColor;
 
   const Book({
     required this.id,
@@ -39,6 +42,7 @@ class Book {
     this.tags = const [],
     this.isOnSale = false,
     this.isSoldOut = false,
+    this.coverColor = const Color(0xFFE8DCCB),
   });
 }
 
