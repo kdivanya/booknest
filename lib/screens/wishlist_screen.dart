@@ -19,7 +19,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final books = _wishlistBooks;
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
@@ -29,71 +28,108 @@ class _WishlistScreenState extends State<WishlistScreen> {
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: Text('My Wishlist',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark)),
             ),
             Expanded(
-              child: books.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.favorite_border_rounded, size: 64, color: AppColors.primaryLighter),
-                          SizedBox(height: 14),
-                          Text('No books in wishlist',
-                              style: TextStyle(fontSize: 16, color: AppColors.textMid, fontWeight: FontWeight.w500)),
-                          SizedBox(height: 6),
-                          Text('Tap ♡ on any book to save it here',
-                              style: TextStyle(fontSize: 13, color: AppColors.textHint)),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: books.length,
-                      itemBuilder: (_, i) {
-                        final book = books[i];
-                        return GestureDetector(
-                          onTap: () => Navigator.push(context,
-                              MaterialPageRoute(builder: (_) => BookDetailScreen(book: book))),
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.bgWhite,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 56, height: 72,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primarySurface,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Center(child: Icon(Icons.menu_book_rounded, size: 28, color: AppColors.primaryLighter)),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(book.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-                                      Text(book.author, style: const TextStyle(fontSize: 12, color: AppColors.textLight)),
-                                      const SizedBox(height: 6),
-                                      Text('Rp ${_fmt(book.price)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                                    ],
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => setState(() => _store.toggleWishlist(book.id)),
-                                  child: const Icon(Icons.favorite_rounded, color: Colors.red, size: 22),
-                                ),
-                              ],
-                            ),
+              child: ValueListenableBuilder<Set<String>>(
+                valueListenable: _store.wishlist,
+                builder: (_, wishlistIds, __) {
+                  final books = allBooks
+                      .where((b) => wishlistIds.contains(b.id))
+                      .toList();
+                  return books.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.favorite_border_rounded,
+                                  size: 64, color: AppColors.primaryLighter),
+                              SizedBox(height: 14),
+                              Text('No books in wishlist',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.textMid,
+                                      fontWeight: FontWeight.w500)),
+                              SizedBox(height: 6),
+                              Text('Tap ♡ on any book to save it here',
+                                  style: TextStyle(
+                                      fontSize: 13, color: AppColors.textHint)),
+                            ],
                           ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: books.length,
+                          itemBuilder: (_, i) {
+                            final book = books[i];
+                            return GestureDetector(
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          BookDetailScreen(book: book))),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgWhite,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 56,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primarySurface,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Center(
+                                          child: Icon(Icons.menu_book_rounded,
+                                              size: 28,
+                                              color: AppColors.primaryLighter)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(book.title,
+                                              style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.textDark)),
+                                          Text(book.author,
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.textLight)),
+                                          const SizedBox(height: 6),
+                                          Text('Rp ${_fmt(book.price)}',
+                                              style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.primary)),
+                                        ],
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(
+                                          () => _store.toggleWishlist(book.id)),
+                                      child: const Icon(Icons.favorite_rounded,
+                                          color: Colors.red, size: 22),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         );
-                      },
-                    ),
+                },
+              ),
             ),
           ],
         ),

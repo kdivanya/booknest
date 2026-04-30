@@ -43,7 +43,8 @@ class BookCard extends StatelessWidget {
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       color: AppColors.primarySurface,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16)),
                     ),
                     child: Center(
                       child: book.isSoldOut
@@ -76,6 +77,7 @@ class BookCard extends StatelessWidget {
                     top: 8,
                     right: 8,
                     child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: onWishlist,
                       child: Container(
                         width: 32,
@@ -119,7 +121,7 @@ class BookCard extends StatelessWidget {
                   ]),
                   const SizedBox(height: 2),
                   Text(book.title,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                           fontSize: 12,

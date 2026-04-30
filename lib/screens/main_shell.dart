@@ -15,22 +15,36 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _index = 0;
+  int _previousIndex = 0;
 
-  final _screens = const [
-    HomeScreen(),
-    WishlistScreen(),
-    CartScreen(),
-    OrderHistoryScreen(),
-    ProfileScreen(),
-  ];
+  Widget _buildCartScreen() {
+    return CartScreen(onBack: () {
+      setState(() {
+        _index = _previousIndex;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
+      body: IndexedStack(index: _index, children: [
+        const HomeScreen(),
+        const WishlistScreen(),
+        _buildCartScreen(),
+        const OrderHistoryScreen(),
+        const ProfileScreen(),
+      ]),
       bottomNavigationBar: BottomNav(
         currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
+        onTap: (i) {
+          if (i != _index) {
+            setState(() {
+              _previousIndex = _index;
+              _index = i;
+            });
+          }
+        },
       ),
     );
   }

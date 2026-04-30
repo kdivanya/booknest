@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../models/book.dart';
+import 'main_shell.dart';
 
 // STATEFUL WIDGET — filter tab state
 class OrderHistoryScreen extends StatefulWidget {
@@ -31,18 +32,30 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MainShell()),
+                      (route) => false,
+                    ),
                     child: Container(
-                      width: 38, height: 38,
-                      decoration: BoxDecoration(color: AppColors.bgWhite, borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(Icons.arrow_back_rounded, size: 18, color: AppColors.textDark),
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                          color: AppColors.bgWhite,
+                          borderRadius: BorderRadius.circular(12)),
+                      child: const Icon(Icons.arrow_back_rounded,
+                          size: 18, color: AppColors.textDark),
                     ),
                   ),
                   const SizedBox(width: 12),
                   const Text('Order History',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark)),
                   const Spacer(),
-                  const Icon(Icons.filter_list_rounded, color: AppColors.textMid),
+                  const Icon(Icons.filter_list_rounded,
+                      color: AppColors.textMid),
                 ],
               ),
             ),
@@ -57,15 +70,21 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     onTap: () => setState(() => _filter = f),
                     child: Container(
                       margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 9),
                       decoration: BoxDecoration(
                         color: active ? AppColors.primary : AppColors.bgWhite,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: active ? AppColors.primary : AppColors.border),
+                        border: Border.all(
+                            color:
+                                active ? AppColors.primary : AppColors.border),
                       ),
-                      child: Text(f, style: TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w500,
-                          color: active ? Colors.white : AppColors.textMid)),
+                      child: Text(f,
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color:
+                                  active ? Colors.white : AppColors.textMid)),
                     ),
                   );
                 }).toList(),
@@ -102,32 +121,50 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           Row(
             children: [
               Container(
-                width: 38, height: 38,
-                decoration: BoxDecoration(color: AppColors.primarySurface, borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.inventory_2_outlined, size: 18, color: AppColors.primary),
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                    color: AppColors.primarySurface,
+                    borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.inventory_2_outlined,
+                    size: 18, color: AppColors.primary),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(order.orderId, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-                    Text(order.date, style: const TextStyle(fontSize: 11, color: AppColors.textLight)),
+                    Text(order.orderId,
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textDark)),
+                    Text(order.date,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textLight)),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isShipping ? AppColors.shipping.withValues(alpha: 0.1) : AppColors.completed.withValues(alpha: 0.1),
+                  color: isShipping
+                      ? AppColors.shipping.withValues(alpha: 0.1)
+                      : AppColors.completed.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(order.status,
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                        color: isShipping ? AppColors.shipping : AppColors.completed)),
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isShipping
+                            ? AppColors.shipping
+                            : AppColors.completed)),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textLight, size: 18),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.textLight, size: 18),
             ],
           ),
           const Divider(height: 20, color: AppColors.border),
@@ -139,21 +176,30 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(order.books.first.title,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textDark)),
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textDark)),
                     if (order.books.length > 1)
                       Text('+ ${order.books.length - 1} other item',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textLight)),
+                          style: const TextStyle(
+                              fontSize: 12, color: AppColors.textLight)),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primarySurface,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('${order.books.length} ${order.books.length == 1 ? "item" : "items"}',
-                    style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                child: Text(
+                    '${order.books.length} ${order.books.length == 1 ? "item" : "items"}',
+                    style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500)),
               ),
             ],
           ),
@@ -164,9 +210,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Total Purchase', style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                  const Text('Total Purchase',
+                      style:
+                          TextStyle(fontSize: 11, color: AppColors.textLight)),
                   Text('Rp ${_fmt(order.total)}',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark)),
                 ],
               ),
               isShipping
@@ -176,21 +227,31 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         backgroundColor: AppColors.textDark,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                       ),
-                      child: const Text('Track Order', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      child: const Text('Track Order',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w600)),
                     )
                   : OutlinedButton.icon(
                       onPressed: () {},
-                      icon: const Icon(Icons.star_rounded, size: 14, color: AppColors.star),
-                      label: Text(order.total > 100000 ? 'Edit Review' : 'Review & Rating',
+                      icon: const Icon(Icons.star_rounded,
+                          size: 14, color: AppColors.star),
+                      label: Text(
+                          order.total > 100000
+                              ? 'Edit Review'
+                              : 'Review & Rating',
                           style: const TextStyle(fontSize: 12)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textMid,
                         side: const BorderSide(color: AppColors.border),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                       ),
                     ),
             ],

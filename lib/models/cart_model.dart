@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'book.dart';
 
 class CartItem {
@@ -14,36 +15,66 @@ class AppStore {
   AppStore._();
 
   final List<CartItem> cart = [];
-  final Set<String> wishlist = {};
+  final ValueNotifier<int> cartUpdated = ValueNotifier(0);
+  final ValueNotifier<Set<String>> wishlist = ValueNotifier({});
   String currentUser = 'Marceline';
   String currentEmail = 'marcybelle@booknest.com';
 
-  void addToCart(Book book) {
-    final idx = cart.indexWhere((c) => c.book.id == book.id);
-    if (idx >= 0) { cart[idx].quantity++; } else { cart.add(CartItem(book: book)); }
+  void _notifyCart() {
+    cartUpdated.value++;
   }
 
-  void removeFromCart(String id) => cart.removeWhere((c) => c.book.id == id);
+  void addToCart(Book book) {
+    final idx = cart.indexWhere((c) => c.book.id == book.id);
+    if (idx >= 0) {
+      cart[idx].quantity++;
+    } else {
+      cart.add(CartItem(book: book));
+    }
+    _notifyCart();
+  }
+
+  void removeFromCart(String id) {
+    cart.removeWhere((c) => c.book.id == id);
+    _notifyCart();
+  }
 
   void increment(String id) {
     final idx = cart.indexWhere((c) => c.book.id == id);
-    if (idx >= 0) cart[idx].quantity++;
+    if (idx >= 0) {
+      cart[idx].quantity++;
+      _notifyCart();
+    }
   }
 
   void decrement(String id) {
     final idx = cart.indexWhere((c) => c.book.id == id);
     if (idx >= 0) {
-      if (cart[idx].quantity > 1) { cart[idx].quantity--; } else { cart.removeAt(idx); }
+      if (cart[idx].quantity > 1) {
+        cart[idx].quantity--;
+      } else {
+        cart.removeAt(idx);
+      }
+      _notifyCart();
     }
   }
 
-  void clearCart() => cart.clear();
-
-  void toggleWishlist(String id) {
-    if (wishlist.contains(id)) { wishlist.remove(id); } else { wishlist.add(id); }
+  void clearCart() {
+    cart.clear();
+    _notifyCart();
   }
 
-  bool isWishlisted(String id) => wishlist.contains(id);
+  void toggleWishlist(String id) {
+    final newWishlist = {...wishlist.value};
+    if (newWishlist.contains(id)) {
+      newWishlist.remove(id);
+    } else {
+      newWishlist.add(id);
+    }
+    wishlist.value = newWishlist;
+  }
+
+  bool isWishlisted(String id) => wishlist.value.contains(id);
 
   double get selectedTotal =>
       cart.where((c) => c.isSelected).fold(0, (sum, c) => sum + c.total);
