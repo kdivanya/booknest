@@ -14,7 +14,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscureText = true;
 
-  // Simple email regex
   bool _isValidEmail(String email) =>
       RegExp(r'^[\w\.\-]+@[\w\-]+\.\w{2,}$').hasMatch(email.trim());
 
@@ -42,7 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // Save user info to store
     AppStore().currentEmail = email;
     AppStore().currentUser = email.split('@').first;
 
@@ -71,14 +69,18 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: AppColors.bgWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Forgot Password',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Enter your email and we\'ll send you a link to reset your password.',
-              style: TextStyle(fontSize: 13, color: AppColors.textMid, height: 1.5),
+              "Enter your email and we'll send you a link to reset your password.",
+              style:
+                  TextStyle(fontSize: 13, color: AppColors.textMid, height: 1.5),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -88,7 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                 hintText: 'Email address',
                 hintStyle: const TextStyle(color: AppColors.textHint),
-                prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textLight),
+                prefixIcon:
+                    const Icon(Icons.email_outlined, color: AppColors.textLight),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(color: AppColors.border),
@@ -99,7 +102,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 filled: true,
                 fillColor: AppColors.bg,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
           ],
@@ -107,7 +111,8 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textLight)),
+            child: const Text('Cancel',
+                style: TextStyle(color: AppColors.textLight)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -118,7 +123,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     content: Text('Reset link sent to ${ctrl.text.trim()}'),
                     backgroundColor: AppColors.primary,
                     behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 );
               }
@@ -127,7 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Send Link'),
           ),
@@ -155,8 +162,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Icon(Icons.arrow_back_rounded,
                         size: 24, color: AppColors.textDark),
                   ),
-                  // Logo SVG rendered as CustomPaint
-                  _BookNestLogo(size: 36),
+                  // FIX: wrap in SizedBox so CustomPaint gets explicit size
+                  SizedBox(
+                    width: 36,
+                    height: 34,
+                    child: CustomPaint(painter: _LogoPainter()),
+                  ),
                 ],
               ),
               const SizedBox(height: 28),
@@ -171,7 +182,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontSize: 14, color: AppColors.textMid, height: 1.5)),
               const SizedBox(height: 32),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                 decoration: BoxDecoration(
                   color: AppColors.bgWhite,
                   borderRadius: BorderRadius.circular(18),
@@ -191,7 +203,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: AppColors.textDark),
                       decoration: InputDecoration(
                         hintText: 'Email',
-                        hintStyle: const TextStyle(color: AppColors.textHint),
+                        hintStyle:
+                            const TextStyle(color: AppColors.textHint),
                         prefixIcon: const Icon(Icons.email_outlined,
                             color: AppColors.textLight),
                         border: OutlineInputBorder(
@@ -211,7 +224,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: AppColors.textDark),
                       decoration: InputDecoration(
                         hintText: 'Password',
-                        hintStyle: const TextStyle(color: AppColors.textHint),
+                        hintStyle:
+                            const TextStyle(color: AppColors.textHint),
                         prefixIcon: const Icon(Icons.lock_outline,
                             color: AppColors.textLight),
                         suffixIcon: GestureDetector(
@@ -272,20 +286,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-/// Inline SVG logo rendered via CustomPaint (no flutter_svg needed)
-class _BookNestLogo extends StatelessWidget {
-  final double size;
-  const _BookNestLogo({this.size = 40});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size * 0.95),
-      painter: _LogoPainter(),
-    );
-  }
-}
-
 class _LogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -293,7 +293,6 @@ class _LogoPainter extends CustomPainter {
       ..color = const Color(0xFF9D81B1)
       ..style = PaintingStyle.fill;
 
-    // Scale path from original 40x38 viewBox
     final sx = size.width / 40;
     final sy = size.height / 38;
     canvas.scale(sx, sy);

@@ -14,7 +14,7 @@ class BookDetailScreen extends StatefulWidget {
 
 class _BookDetailScreenState extends State<BookDetailScreen> {
   final _store = AppStore();
-  int _tab = 0; // 0=Synopsis, 1=Reviews, 2=Details
+  int _tab = 0;
   bool _expanded = false;
   late bool _wishlisted;
 
@@ -29,10 +29,190 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         _wishlisted = _store.isWishlisted(widget.book.id);
       });
 
+  // FIX: Show qty picker bottom sheet before going to checkout
   void _buyNow() {
-    _store.addToCart(widget.book);
-    Navigator.push(
-        context, MaterialPageRoute(builder: (_) => CheckoutScreen()));
+    int qty = 1;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModal) {
+            final book = widget.book;
+            return Container(
+              padding: EdgeInsets.only(
+                left: 20, right: 20, top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              decoration: const BoxDecoration(
+                color: AppColors.bgWhite,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // drag handle
+                  Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Book row
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: 64, height: 64,
+                          color: book.coverColor.withValues(alpha: 0.2),
+                          child: Image.network(
+                            book.coverUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.menu_book_rounded,
+                              color: book.coverColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(book.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textDark)),
+                            const SizedBox(height: 4),
+                            Text('Rp ${_fmt(book.price)}',
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  // Qty picker
+                  Row(
+                    children: [
+                      const Text('Quantity',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textDark)),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () {
+                          if (qty > 1) setModal(() => qty--);
+                        },
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: qty > 1
+                                ? AppColors.primarySurface
+                                : AppColors.bg,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(Icons.remove_rounded,
+                              size: 18,
+                              color: qty > 1
+                                  ? AppColors.primary
+                                  : AppColors.textLight),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('$qty',
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark)),
+                      ),
+                      GestureDetector(
+                        onTap: () => setModal(() => qty++),
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.primarySurface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.add_rounded,
+                              size: 18, color: AppColors.primary),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Total preview
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.bg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Total',
+                            style: TextStyle(
+                                fontSize: 13, color: AppColors.textMid)),
+                        Text('Rp ${_fmt(book.price * qty)}',
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Buy Now button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx); // close bottom sheet
+                        // Add qty items to cart then go to checkout
+                        for (int i = 0; i < qty; i++) {
+                          _store.addToCart(book);
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => CheckoutScreen()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(26)),
+                      ),
+                      child: const Text('Buy Now',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _addToCart() {
@@ -42,7 +222,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         content: const Text('Book added to cart'),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 1),
       ),
     );
@@ -76,8 +257,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                 : Icons.favorite_border_rounded,
                             _toggleWishlist,
                             color: _wishlisted ? Colors.red : null,
-                            bgColor:
-                                _wishlisted ? const Color(0xFFFFECEC) : null,
+                            bgColor: _wishlisted
+                                ? const Color(0xFFFFECEC)
+                                : null,
                           ),
                         ],
                       ),
@@ -105,19 +287,22 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.contain,
-                            loadingBuilder: (context, child, loadingProgress) {
+                            loadingBuilder:
+                                (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return Container(
                                 color: AppColors.primarySurface,
                                 child: const Center(
-                                    child: CircularProgressIndicator(strokeWidth: 2)),
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
                               );
                             },
                             errorBuilder: (_, __, ___) => Container(
                               color: AppColors.primarySurface,
                               child: const Center(
                                 child: Icon(Icons.menu_book_rounded,
-                                    size: 72, color: AppColors.primaryLighter),
+                                    size: 72,
+                                    color: AppColors.primaryLighter),
                               ),
                             ),
                           ),
@@ -127,7 +312,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
                     // ── Title & Rating ──
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         children: [
                           Text(book.title,
@@ -139,7 +325,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           const SizedBox(height: 4),
                           Text('by ${book.author}',
                               style: const TextStyle(
-                                  fontSize: 13, color: AppColors.textMid)),
+                                  fontSize: 13,
+                                  color: AppColors.textMid)),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -149,11 +336,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                   return const Icon(Icons.star_rounded,
                                       size: 18, color: AppColors.star);
                                 } else if (i < book.rating) {
-                                  return const Icon(Icons.star_half_rounded,
-                                      size: 18, color: AppColors.star);
+                                  return const Icon(
+                                      Icons.star_half_rounded,
+                                      size: 18,
+                                      color: AppColors.star);
                                 }
-                                return const Icon(Icons.star_border_rounded,
-                                    size: 18, color: AppColors.star);
+                                return const Icon(
+                                    Icons.star_border_rounded,
+                                    size: 18,
+                                    color: AppColors.star);
                               }),
                               const SizedBox(width: 6),
                               Text('(${book.reviewCount} reviews)',
@@ -169,7 +360,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.primary)),
                           const SizedBox(height: 16),
-                          // Format pills
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -181,7 +371,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          // Tab bar
                           Row(
                             children: [
                               _tabBtn('Synopsis', 0),
@@ -192,7 +381,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          // Tab content
                           _buildTabContent(book),
                           const SizedBox(height: 20),
                         ],
@@ -227,7 +415,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       ),
                       child: const Text('Buy Now',
                           style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w600)),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -258,7 +447,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   Widget _buildTabContent(Book book) {
     switch (_tab) {
-      case 0: // Synopsis
+      case 0:
         final lines = book.synopsis.split('\n');
         final preview = lines.first;
         return Column(
@@ -267,14 +456,18 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             Text(
               _expanded ? book.synopsis : preview,
               style: const TextStyle(
-                  fontSize: 14, color: AppColors.textDark, height: 1.6),
+                  fontSize: 14,
+                  color: AppColors.textDark,
+                  height: 1.6),
             ),
             if (!_expanded && lines.length > 1) ...[
               const SizedBox(height: 4),
               Text(
                 lines.length > 1 ? lines.last : '',
                 style: const TextStyle(
-                    fontSize: 14, color: AppColors.textLight, height: 1.6),
+                    fontSize: 14,
+                    color: AppColors.textLight,
+                    height: 1.6),
               ),
             ],
             const SizedBox(height: 6),
@@ -291,11 +484,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ],
         );
 
-      case 1: // Reviews
+      case 1:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Rating summary
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -319,7 +511,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     const SizedBox(height: 2),
                     Text('${book.reviewCount} TOTAL',
                         style: const TextStyle(
-                            fontSize: 10, color: AppColors.textLight)),
+                            fontSize: 10,
+                            color: AppColors.textLight)),
                   ],
                 ),
                 const SizedBox(width: 16),
@@ -336,21 +529,25 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                       ? 0.04
                                       : 0.0;
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 3),
                         child: Row(
                           children: [
                             Text('$star stars',
                                 style: const TextStyle(
-                                    fontSize: 11, color: AppColors.textLight)),
+                                    fontSize: 11,
+                                    color: AppColors.textLight)),
                             const SizedBox(width: 8),
                             Expanded(
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(4),
                                 child: LinearProgressIndicator(
                                   value: pct,
-                                  backgroundColor: AppColors.primarySurface,
+                                  backgroundColor:
+                                      AppColors.primarySurface,
                                   valueColor:
-                                      const AlwaysStoppedAnimation<Color>(
+                                      const AlwaysStoppedAnimation<
+                                              Color>(
                                           AppColors.primary),
                                   minHeight: 8,
                                 ),
@@ -375,19 +572,22 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ],
         );
 
-      case 2: // Details
+      case 2:
         return Column(
           children: [
-            _detailRow(Icons.person_outline_rounded, 'Author', book.author),
             _detailRow(
-                Icons.account_balance_outlined, 'Publisher', book.publisher),
+                Icons.person_outline_rounded, 'Author', book.author),
+            _detailRow(Icons.account_balance_outlined, 'Publisher',
+                book.publisher),
             _detailRow(Icons.calendar_today_outlined, 'Released Date',
                 book.releasedDate),
-            _detailRow(Icons.bookmark_border_rounded, 'Genre', book.genre),
-            _detailRow(Icons.barcode_reader, 'ISBN', book.isbn),
-            _detailRow(Icons.language_rounded, 'Language', book.language),
             _detailRow(
-                Icons.folder_outlined, 'File Size', '${book.fileSize} MB'),
+                Icons.bookmark_border_rounded, 'Genre', book.genre),
+            _detailRow(Icons.barcode_reader, 'ISBN', book.isbn),
+            _detailRow(
+                Icons.language_rounded, 'Language', book.language),
+            _detailRow(Icons.folder_outlined, 'File Size',
+                '${book.fileSize} MB'),
             if (book.tags.isNotEmpty) ...[
               const SizedBox(height: 16),
               Align(
@@ -411,8 +611,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                     horizontal: 14, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: AppColors.bgWhite,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: AppColors.border),
+                                  borderRadius:
+                                      BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: AppColors.border),
                                 ),
                                 child: Text(t,
                                     style: const TextStyle(
@@ -438,14 +640,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 40, height: 40,
         decoration: BoxDecoration(
           color: bgColor ?? AppColors.bgWhite,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06), blurRadius: 8)
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 8)
           ],
         ),
         child: Icon(icon, size: 18, color: color ?? AppColors.textDark),
@@ -455,7 +657,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   Widget _pill(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.bgWhite,
         borderRadius: BorderRadius.circular(12),
@@ -465,7 +668,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         children: [
           Text(label,
               style: const TextStyle(
-                  fontSize: 9, color: AppColors.textLight, letterSpacing: 0.3)),
+                  fontSize: 9,
+                  color: AppColors.textLight,
+                  letterSpacing: 0.3)),
           const SizedBox(height: 2),
           Text(value,
               style: const TextStyle(
@@ -486,8 +691,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           Text(label,
               style: TextStyle(
                   fontSize: 14,
-                  fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                  color: active ? AppColors.primary : AppColors.textLight)),
+                  fontWeight:
+                      active ? FontWeight.w600 : FontWeight.w400,
+                  color: active
+                      ? AppColors.primary
+                      : AppColors.textLight)),
           const SizedBox(height: 4),
           if (active)
             Container(
@@ -517,7 +725,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               CircleAvatar(
                   radius: 18,
                   backgroundColor: AppColors.primarySurface,
-                  child: Text(r.avatar, style: const TextStyle(fontSize: 18))),
+                  child: Text(r.avatar,
+                      style: const TextStyle(fontSize: 18))),
               const SizedBox(width: 10),
               Expanded(
                   child: Column(
@@ -543,7 +752,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           const SizedBox(height: 8),
           Text(r.text,
               style: const TextStyle(
-                  fontSize: 13, color: AppColors.textMid, height: 1.5)),
+                  fontSize: 13,
+                  color: AppColors.textMid,
+                  height: 1.5)),
         ],
       ),
     );
@@ -553,13 +764,15 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.border))),
+          border:
+              Border(bottom: BorderSide(color: AppColors.border))),
       child: Row(
         children: [
           Icon(icon, size: 18, color: AppColors.primaryLighter),
           const SizedBox(width: 12),
           Text(label,
-              style: const TextStyle(fontSize: 13, color: AppColors.textLight)),
+              style: const TextStyle(
+                  fontSize: 13, color: AppColors.textLight)),
           const Spacer(),
           Text(value,
               style: const TextStyle(

@@ -5,6 +5,7 @@ import '../models/cart_model.dart';
 import '../widgets/book_card.dart';
 import 'search_screen.dart';
 import 'book_detail_screen.dart';
+import 'book_list_screen.dart';
 
 // STATEFUL WIDGET — category filter state + wishlist toggle
 class HomeScreen extends StatefulWidget {
@@ -45,11 +46,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // FIX: "More" button now opens BookListScreen (grid of books), not SearchScreen
   void _showAllBooks(String title, List<Book> books) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => SearchScreen(initialQuery: '', bookList: books, title: title),
+        builder: (_) => BookListScreen(title: title, books: books),
       ),
     );
   }
@@ -132,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final featuredBooks = allBooks.where((b) => b.isOnSale).toList();
-    // Responsive breakpoint
     final screenW = MediaQuery.of(context).size.width;
     final isWide = screenW >= 600;
 
@@ -161,7 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Container(
                           width: 38, height: 38,
                           decoration: const BoxDecoration(
-                              color: AppColors.bgWhite, shape: BoxShape.circle),
+                              color: AppColors.bgWhite,
+                              shape: BoxShape.circle),
                           child: const Icon(Icons.notifications_outlined,
                               size: 20, color: AppColors.textMid),
                         ),
@@ -184,7 +186,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Center(
                         child: Text(
                           AppStore().currentUser.isNotEmpty
-                              ? AppStore().currentUser.substring(0, 2).toUpperCase()
+                              ? AppStore()
+                                  .currentUser
+                                  .substring(0, 2)
+                                  .toUpperCase()
                               : 'MB',
                           style: const TextStyle(
                               color: Colors.white,
@@ -229,7 +234,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               SizedBox(width: 8),
                               Text('Search books',
                                   style: TextStyle(
-                                      color: AppColors.textHint, fontSize: 14)),
+                                      color: AppColors.textHint,
+                                      fontSize: 14)),
                             ],
                           ),
                         ),
@@ -254,12 +260,24 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // ── On Sale Today Banner (Responsive) ──
+            // Mobile: horizontal scroll dengan card lebar penuh layar - 40px
+            // Wide: grid 3 kolom
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: isWide
-                    // Wide (web/tablet): grid layout
-                    ? GridView.builder(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 20, 20, 12),
+                    child: Text('On Sale Today',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textDark)),
+                  ),
+                  if (isWide)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate:
@@ -267,36 +285,38 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisCount: 3,
                           mainAxisSpacing: 12,
                           crossAxisSpacing: 12,
-                          childAspectRatio: 1.8,
+                          childAspectRatio: 1.6,
                         ),
-                        itemCount: featuredBooks.isNotEmpty
-                            ? featuredBooks.length
-                            : 1,
+                        itemCount:
+                            featuredBooks.isNotEmpty ? featuredBooks.length : 1,
                         itemBuilder: (_, i) {
                           final book = featuredBooks.isNotEmpty
                               ? featuredBooks[i]
                               : allBooks[0];
-                          return FeaturedBookCard(
+                          return _ResponsiveFeaturedCard(
                               book: book, onTap: () => _openDetail(book));
                         },
-                      )
-                    // Mobile: horizontal scroll
-                    : SizedBox(
-                        height: 245,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: featuredBooks.isNotEmpty
-                              ? featuredBooks.length
-                              : 1,
-                          itemBuilder: (_, i) {
-                            final book = featuredBooks.isNotEmpty
-                                ? featuredBooks[i]
-                                : allBooks[0];
-                            return FeaturedBookCard(
-                                book: book, onTap: () => _openDetail(book));
-                          },
-                        ),
                       ),
+                    )
+                  else
+                    // Mobile: card melebar hampir seluruh layar
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount:
+                            featuredBooks.isNotEmpty ? featuredBooks.length : 1,
+                        itemBuilder: (_, i) {
+                          final book = featuredBooks.isNotEmpty
+                              ? featuredBooks[i]
+                              : allBooks[0];
+                          return _ResponsiveFeaturedCard(
+                              book: book, onTap: () => _openDetail(book));
+                        },
+                      ),
+                    ),
+                ],
               ),
             ),
 
@@ -313,7 +333,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                             color: AppColors.textDark)),
                     TextButton(
-                      onPressed: () => _showAllBooks('You Might Like', _recommendedBooks),
+                      onPressed: () =>
+                          _showAllBooks('You Might Like', _recommendedBooks),
                       child: const Text('More',
                           style: TextStyle(
                               color: AppColors.primary, fontSize: 13)),
@@ -330,9 +351,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: (screenW / 160).floor().clamp(2, 6),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                              (screenW / 160).floor().clamp(2, 6),
                           mainAxisSpacing: 14,
                           crossAxisSpacing: 14,
                           childAspectRatio: 0.62,
@@ -385,7 +406,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                             color: AppColors.textDark)),
                     TextButton(
-                      onPressed: () => _showAllBooks('Popular Books', _popularBooks),
+                      onPressed: () =>
+                          _showAllBooks('Popular Books', _popularBooks),
                       child: const Text('More',
                           style: TextStyle(
                               color: AppColors.primary, fontSize: 13)),
@@ -411,10 +433,125 @@ class _HomeScreenState extends State<HomeScreen> {
                   childCount: _popularBooks.length,
                 ),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isWide ? (screenW / 180).floor().clamp(3, 6) : 2,
+                  crossAxisCount:
+                      isWide ? (screenW / 180).floor().clamp(3, 6) : 2,
                   mainAxisSpacing: 14,
                   crossAxisSpacing: 14,
                   childAspectRatio: 0.62,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// FIX: Featured card yang responsif — lebarnya mengikuti layar di mobile,
+/// bukan hardcoded 280px.
+class _ResponsiveFeaturedCard extends StatelessWidget {
+  final Book book;
+  final VoidCallback onTap;
+  const _ResponsiveFeaturedCard(
+      {required this.book, required this.onTap});
+
+  String _fmt(double p) => p.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+
+  @override
+  Widget build(BuildContext context) {
+    final screenW = MediaQuery.of(context).size.width;
+    final isWide = screenW >= 600;
+    // Mobile: card lebar = layar - 40px (padding kiri kanan) - 12px (gap next card)
+    final cardWidth = isWide ? double.infinity : screenW - 40 - 12;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: isWide ? null : cardWidth,
+        margin: isWide ? EdgeInsets.zero : const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF7C5CBF), Color(0xFF5A3E99)],
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Text info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (book.isOnSale)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text('ON SALE TODAY!',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  const SizedBox(height: 8),
+                  Text(book.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2)),
+                  const SizedBox(height: 4),
+                  Text(book.author,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 12)),
+                  const SizedBox(height: 10),
+                  Text('Rp ${_fmt(book.price)}',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                  if (book.originalPrice != null &&
+                      book.originalPrice! > book.price) ...[
+                    const SizedBox(height: 2),
+                    Text('Rp ${_fmt(book.originalPrice!)}',
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 12,
+                            decoration: TextDecoration.lineThrough)),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Cover image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 80, height: 110,
+                color: Colors.white.withValues(alpha: 0.15),
+                child: Image.network(
+                  book.coverUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.menu_book_rounded,
+                    size: 40,
+                    color: Colors.white54,
+                  ),
                 ),
               ),
             ),
