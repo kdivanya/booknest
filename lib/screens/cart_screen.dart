@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../models/cart_model.dart';
-import 'order_success_screen.dart';
+import 'checkout_screen.dart';
 
 // STATEFUL WIDGET — checkbox, qty, total
 class CartScreen extends StatefulWidget {
@@ -14,24 +14,20 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   final _store = AppStore();
 
-  void _checkout() {
-    final selected = _store.cart.where((c) => c.isSelected).toList();
-    if (selected.isEmpty) {
+  void _goCheckout() {
+    if (_store.selectedCount == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: const Text('Select at least one item'),
             backgroundColor: AppColors.primary,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12))),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
       );
       return;
     }
-    for (final item in selected) {
-      _store.cart.remove(item);
-    }
     Navigator.push(
-        context, MaterialPageRoute(builder: (_) => const OrderSuccessScreen()));
+        context, MaterialPageRoute(builder: (_) => CheckoutScreen()));
   }
 
   @override
@@ -54,8 +50,7 @@ class _CartScreenState extends State<CartScreen> {
                         GestureDetector(
                           onTap: widget.onBack ?? () => Navigator.pop(context),
                           child: Container(
-                            width: 38,
-                            height: 38,
+                            width: 38, height: 38,
                             decoration: BoxDecoration(
                                 color: AppColors.bgWhite,
                                 borderRadius: BorderRadius.circular(12)),
@@ -94,8 +89,7 @@ class _CartScreenState extends State<CartScreen> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed:
-                            widget.onBack ?? () => Navigator.pop(context),
+                        onPressed: widget.onBack ?? () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -136,8 +130,7 @@ class _CartScreenState extends State<CartScreen> {
                       GestureDetector(
                         onTap: widget.onBack ?? () => Navigator.pop(context),
                         child: Container(
-                          width: 38,
-                          height: 38,
+                          width: 38, height: 38,
                           decoration: BoxDecoration(
                               color: AppColors.bgWhite,
                               borderRadius: BorderRadius.circular(12)),
@@ -153,9 +146,7 @@ class _CartScreenState extends State<CartScreen> {
                               color: AppColors.textDark)),
                       const Spacer(),
                       GestureDetector(
-                        onTap: () {
-                          setState(() => _store.clearCart());
-                        },
+                        onTap: () => setState(() => _store.clearCart()),
                         child: const Text('Clear all',
                             style: TextStyle(
                                 fontSize: 13, color: AppColors.primary)),
@@ -169,11 +160,11 @@ class _CartScreenState extends State<CartScreen> {
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: cart.length,
-                    itemBuilder: (_, i) => _cartItem(cart[i], i),
+                    itemBuilder: (_, i) => _cartItem(cart[i]),
                   ),
                 ),
 
-                // Summary
+                // Summary — rebuilds whenever cartUpdated fires
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   padding: const EdgeInsets.all(16),
@@ -182,8 +173,7 @@ class _CartScreenState extends State<CartScreen> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                          color:
-                              AppColors.primaryLighter.withValues(alpha: 0.2),
+                          color: AppColors.primaryLighter.withValues(alpha: 0.2),
                           blurRadius: 10)
                     ],
                   ),
@@ -197,8 +187,7 @@ class _CartScreenState extends State<CartScreen> {
                             children: [
                               const Text('Subtotal',
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textLight)),
+                                      fontSize: 12, color: AppColors.textLight)),
                               Text('Rp ${_fmt(_store.selectedTotal)}',
                                   style: const TextStyle(
                                       fontSize: 22,
@@ -213,8 +202,9 @@ class _CartScreenState extends State<CartScreen> {
                               color: AppColors.primarySurface,
                               borderRadius: BorderRadius.circular(20),
                             ),
+                            // Fix #8: reads live selectedCount
                             child: Text(
-                                '${_store.selectedCount} Items Selected',
+                                '${_store.selectedCount} Item${_store.selectedCount == 1 ? '' : 's'} Selected',
                                 style: const TextStyle(
                                     fontSize: 12,
                                     color: AppColors.primary,
@@ -227,7 +217,7 @@ class _CartScreenState extends State<CartScreen> {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: _checkout,
+                          onPressed: _goCheckout,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
@@ -259,7 +249,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _cartItem(CartItem item, int index) {
+  Widget _cartItem(CartItem item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -277,39 +267,34 @@ class _CartScreenState extends State<CartScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Checkbox
+          // Checkbox — toggling calls setState so summary re-renders
           GestureDetector(
             onTap: () => setState(() => item.isSelected = !item.isSelected),
             child: Container(
-              width: 24,
-              height: 24,
+              width: 24, height: 24,
               decoration: BoxDecoration(
                 color: item.isSelected ? AppColors.primary : Colors.transparent,
                 border: Border.all(
-                  color:
-                      item.isSelected ? AppColors.primary : AppColors.borderMid,
+                  color: item.isSelected ? AppColors.primary : AppColors.borderMid,
                   width: 1.5,
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: item.isSelected
-                  ? const Icon(Icons.check_rounded,
-                      size: 14, color: Colors.white)
+                  ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
                   : null,
             ),
           ),
           const SizedBox(width: 14),
-          // Cover placeholder
+          // Cover
           ClipRRect(
             borderRadius: BorderRadius.circular(18),
             child: Container(
-              width: 72,
-              height: 72,
+              width: 72, height: 72,
               color: item.book.coverColor.withValues(alpha: 0.18),
               child: Image.network(
                 item.book.coverUrl,
-                width: 72,
-                height: 72,
+                width: 72, height: 72,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Center(
                   child: Icon(Icons.menu_book_rounded,
@@ -343,11 +328,9 @@ class _CartScreenState extends State<CartScreen> {
                             color: AppColors.primary)),
                     const Spacer(),
                     GestureDetector(
-                      onTap: () =>
-                          setState(() => _store.decrement(item.book.id)),
+                      onTap: () => setState(() => _store.decrement(item.book.id)),
                       child: Container(
-                        width: 30,
-                        height: 30,
+                        width: 30, height: 30,
                         decoration: BoxDecoration(
                           color: AppColors.primarySurface,
                           borderRadius: BorderRadius.circular(10),
@@ -365,11 +348,9 @@ class _CartScreenState extends State<CartScreen> {
                               color: AppColors.textDark)),
                     ),
                     GestureDetector(
-                      onTap: () =>
-                          setState(() => _store.increment(item.book.id)),
+                      onTap: () => setState(() => _store.increment(item.book.id)),
                       child: Container(
-                        width: 30,
-                        height: 30,
+                        width: 30, height: 30,
                         decoration: BoxDecoration(
                           color: AppColors.primarySurface,
                           borderRadius: BorderRadius.circular(10),
@@ -388,6 +369,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  String _fmt(double p) => p.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+  String _fmt(double p) => p
+      .toStringAsFixed(0)
+      .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 }

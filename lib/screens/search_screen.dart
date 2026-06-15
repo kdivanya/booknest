@@ -8,7 +8,9 @@ import 'book_detail_screen.dart';
 // STATEFUL WIDGET — search query, results, recent searches state
 class SearchScreen extends StatefulWidget {
   final String initialQuery;
-  const SearchScreen({super.key, this.initialQuery = ''});
+  final List<Book>? bookList;
+  final String? title;
+  const SearchScreen({super.key, this.initialQuery = '', this.bookList, this.title});
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
@@ -55,7 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Book> get _results {
     if (_query.isEmpty) return [];
     final q = _query.toLowerCase();
-    return allBooks
+    return (widget.bookList ?? allBooks)
         .where((b) =>
             b.title.toLowerCase().contains(q) ||
             b.author.toLowerCase().contains(q) ||

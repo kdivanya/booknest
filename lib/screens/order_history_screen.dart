@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
-import '../models/book.dart';
+import '../models/cart_model.dart';
 import 'main_shell.dart';
 
-// STATEFUL WIDGET — filter tab state
+// STATEFUL WIDGET — filter tab state, reads real orders from AppStore
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
   @override
@@ -11,12 +11,13 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+  final _store = AppStore();
   String _filter = 'All';
   final _filters = ['All', 'Shipping', 'Completed'];
 
-  List<OrderHistory> get _filtered => _filter == 'All'
-      ? dummyOrders
-      : dummyOrders.where((o) => o.status == _filter).toList();
+  List<Order> get _filtered => _filter == 'All'
+      ? _store.orders.value
+      : _store.orders.value.where((o) => o.status == _filter).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +39,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       (route) => false,
                     ),
                     child: Container(
-                      width: 38,
-                      height: 38,
+                      width: 38, height: 38,
                       decoration: BoxDecoration(
                           color: AppColors.bgWhite,
                           borderRadius: BorderRadius.circular(12)),
@@ -93,11 +93,43 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
             const SizedBox(height: 16),
 
+            // Order list — listens to orders ValueNotifier
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _filtered.length,
-                itemBuilder: (_, i) => _orderCard(_filtered[i]),
+              child: ValueListenableBuilder<List<Order>>(
+                valueListenable: _store.orders,
+                builder: (_, __, ___) {
+                  final list = _filtered;
+                  if (list.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.receipt_long_outlined,
+                              size: 72, color: AppColors.primaryLighter),
+                          const SizedBox(height: 16),
+                          const Text('No orders yet',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textDark)),
+                          const SizedBox(height: 8),
+                          Text(
+                            _filter == 'All'
+                                ? 'Your order history will appear here.'
+                                : 'No "$_filter" orders found.',
+                            style: const TextStyle(
+                                fontSize: 13, color: AppColors.textMid),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: list.length,
+                    itemBuilder: (_, i) => _orderCard(list[i]),
+                  );
+                },
               ),
             ),
           ],
@@ -106,154 +138,129 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     );
   }
 
-  Widget _orderCard(OrderHistory order) {
-    final isShipping = order.status == 'Shipping';
+  Widget _orderCard(Order order) {
+    final isCompleted = order.status == 'Completed';
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.bgWhite,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.primaryLighter.withValues(alpha: 0.12),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Order ID + status
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                    color: AppColors.primarySurface,
-                    borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.inventory_2_outlined,
-                    size: 18, color: AppColors.primary),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(order.orderId,
-                        style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textDark)),
-                    Text(order.date,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.textLight)),
-                  ],
-                ),
-              ),
+              Text(order.orderId,
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark)),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isShipping
-                      ? AppColors.shipping.withValues(alpha: 0.1)
-                      : AppColors.completed.withValues(alpha: 0.1),
+                  color: isCompleted
+                      ? const Color(0xFFE8F5E9)
+                      : AppColors.primarySurface,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(order.status,
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isShipping
-                            ? AppColors.shipping
-                            : AppColors.completed)),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.textLight, size: 18),
-            ],
-          ),
-          const Divider(height: 20, color: AppColors.border),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(order.books.first.title,
-                        style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textDark)),
-                    if (order.books.length > 1)
-                      Text('+ ${order.books.length - 1} other item',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.textLight)),
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primarySurface,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                    '${order.books.length} ${order.books.length == 1 ? "item" : "items"}',
-                    style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500)),
+                        color: isCompleted
+                            ? const Color(0xFF2E7D32)
+                            : AppColors.primary)),
               ),
             ],
           ),
           const SizedBox(height: 12),
+          // Book list
+          ...order.items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        width: 44, height: 44,
+                        color: item.book.coverColor.withValues(alpha: 0.2),
+                        child: Image.network(
+                          item.book.coverUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.menu_book_rounded,
+                            size: 20,
+                            color: item.book.coverColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.book.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textDark)),
+                          Text('x${item.quantity} · ${item.book.format}',
+                              style: const TextStyle(
+                                  fontSize: 11, color: AppColors.textLight)),
+                        ],
+                      ),
+                    ),
+                    Text('Rp ${_fmt(item.total)}',
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textDark)),
+                  ],
+                ),
+              )),
+          const Divider(color: AppColors.border, height: 20),
+          // Footer
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Total Purchase',
+                  Text(order.formattedDate,
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textLight)),
+                  Text(order.paymentMethod,
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textLight)),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('Total',
                       style:
                           TextStyle(fontSize: 11, color: AppColors.textLight)),
                   Text('Rp ${_fmt(order.total)}',
                       style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textDark)),
+                          color: AppColors.primary)),
                 ],
               ),
-              isShipping
-                  ? ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.textDark,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                      ),
-                      child: const Text('Track Order',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w600)),
-                    )
-                  : OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.star_rounded,
-                          size: 14, color: AppColors.star),
-                      label: Text(
-                          order.total > 100000
-                              ? 'Edit Review'
-                              : 'Review & Rating',
-                          style: const TextStyle(fontSize: 12)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textMid,
-                        side: const BorderSide(color: AppColors.border),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                      ),
-                    ),
             ],
           ),
         ],
@@ -261,6 +268,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     );
   }
 
-  String _fmt(double p) => p.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+  String _fmt(double p) => p
+      .toStringAsFixed(0)
+      .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../models/book.dart';
 import '../models/cart_model.dart';
-import 'cart_screen.dart';
+import 'checkout_screen.dart';
 
 // STATEFUL WIDGET — tab selection, wishlist toggle, read more
 class BookDetailScreen extends StatefulWidget {
@@ -32,7 +32,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void _buyNow() {
     _store.addToCart(widget.book);
     Navigator.push(
-        context, MaterialPageRoute(builder: (_) => const CartScreen()));
+        context, MaterialPageRoute(builder: (_) => CheckoutScreen()));
   }
 
   void _addToCart() {
@@ -88,11 +88,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       margin: const EdgeInsets.all(32),
                       height: 260,
                       decoration: BoxDecoration(
-                        color: AppColors.primarySurface,
+                        color: book.coverColor.withValues(alpha: 0.22),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.15),
+                              color: book.coverColor.withValues(alpha: 0.4),
                               blurRadius: 20,
                               offset: const Offset(0, 8)),
                         ],

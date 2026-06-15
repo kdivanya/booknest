@@ -115,15 +115,7 @@ class AuthGateScreen extends StatelessWidget {
                               fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: GestureDetector(
-                      onTap: () => _enter(context),
-                      child: const Text('Continue without account',
-                          style: TextStyle(
-                              fontSize: 13, color: AppColors.textMid)),
-                    ),
-                  ),
+
                 ],
               ),
             ),

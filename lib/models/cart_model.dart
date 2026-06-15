@@ -9,6 +9,34 @@ class CartItem {
   double get total => book.price * quantity;
 }
 
+class Order {
+  final String orderId;
+  final DateTime date;
+  final String status;
+  final List<CartItem> items;
+  final double total;
+  final String address;
+  final String paymentMethod;
+
+  Order({
+    required this.orderId,
+    required this.date,
+    required this.status,
+    required this.items,
+    required this.total,
+    required this.address,
+    required this.paymentMethod,
+  });
+
+  String get mainBookTitle => items.isNotEmpty ? items.first.book.title : '-';
+  int get itemCount => items.fold(0, (sum, c) => sum + c.quantity);
+
+  String get formattedDate {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+}
+
 class AppStore {
   static final AppStore _i = AppStore._();
   factory AppStore() => _i;
@@ -17,6 +45,8 @@ class AppStore {
   final List<CartItem> cart = [];
   final ValueNotifier<int> cartUpdated = ValueNotifier(0);
   final ValueNotifier<Set<String>> wishlist = ValueNotifier({});
+  final ValueNotifier<List<Order>> orders = ValueNotifier([]);
+
   String currentUser = 'Marceline';
   String currentEmail = 'marcybelle@booknest.com';
 
@@ -64,6 +94,27 @@ class AppStore {
     _notifyCart();
   }
 
+  void placeOrder({required String address, required String paymentMethod}) {
+    final selected = cart.where((c) => c.isSelected).toList();
+    if (selected.isEmpty) return;
+
+    final order = Order(
+      orderId: 'BN-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      date: DateTime.now(),
+      status: 'Completed',
+      items: selected.map((c) => CartItem(book: c.book, quantity: c.quantity)).toList(),
+      total: selectedTotal,
+      address: address,
+      paymentMethod: paymentMethod,
+    );
+
+    cart.removeWhere((c) => c.isSelected);
+    _notifyCart();
+
+    final updated = [...orders.value, order];
+    orders.value = updated;
+  }
+
   void toggleWishlist(String id) {
     final newWishlist = {...wishlist.value};
     if (newWishlist.contains(id)) {
@@ -82,4 +133,8 @@ class AppStore {
   int get selectedCount => cart.where((c) => c.isSelected).length;
 
   int get cartCount => cart.fold(0, (sum, c) => sum + c.quantity);
+
+  int get wishlistCount => wishlist.value.length;
+
+  int get orderCount => orders.value.length;
 }

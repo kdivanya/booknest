@@ -17,22 +17,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final _store = AppStore();
   String _selectedCategory = 'Fiction';
   final _categories = [
-    'Romance',
-    'Fantasy',
-    'Mystery',
-    'Sci-Fi',
-    'Horror',
-    'Action & Adventure',
-    'Comic',
-    'Fiction',
-    'Non-Fiction',
-    'History',
-    'Self-Help',
+    'Romance', 'Fantasy', 'Mystery', 'Sci-Fi', 'Horror',
+    'Action & Adventure', 'Comic', 'Fiction', 'Non-Fiction',
+    'History', 'Self-Help',
   ];
 
-  List<Book> get _recommendedBooks => allBooks.take(4).toList();
-
-  List<Book> get _popularBooks => allBooks.take(4).toList();
+  List<Book> get _recommendedBooks => allBooks.take(6).toList();
+  List<Book> get _popularBooks => allBooks.toList();
 
   void _openDetail(Book book) {
     Navigator.push(context,
@@ -40,15 +31,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _toggleWishlist(Book book) {
-    setState(() {
-      _store.toggleWishlist(book.id);
-    });
+    setState(() => _store.toggleWishlist(book.id));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(_store.isWishlisted(book.id)
-            ? '"${book.title}" ditambahkan ke wishlist'
-            : '"${book.title}" dihapus dari wishlist'),
+            ? '"${book.title}" added to wishlist'
+            : '"${book.title}" removed from wishlist'),
         duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.primary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _showAllBooks(String title, List<Book> books) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SearchScreen(initialQuery: '', bookList: books, title: title),
       ),
     );
   }
@@ -70,8 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Center(
                 child: Container(
-                  width: 40,
-                  height: 4,
+                  width: 40, height: 4,
                   decoration: BoxDecoration(
                     color: AppColors.border,
                     borderRadius: BorderRadius.circular(2),
@@ -84,9 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textDark)),
-              const SizedBox(height: 8),
-              const Text('Pilih genre buku yang ingin ditampilkan.',
-                  style: TextStyle(fontSize: 13, color: AppColors.textMid)),
               const SizedBox(height: 20),
               Wrap(
                 spacing: 10,
@@ -96,6 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
+                      setState(() => _selectedCategory = cat);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -134,6 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final featuredBooks = allBooks.where((b) => b.isOnSale).toList();
+    // Responsive breakpoint
+    final screenW = MediaQuery.of(context).size.width;
+    final isWide = screenW >= 600;
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -158,19 +159,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     Stack(
                       children: [
                         Container(
-                          width: 38,
-                          height: 38,
+                          width: 38, height: 38,
                           decoration: const BoxDecoration(
                               color: AppColors.bgWhite, shape: BoxShape.circle),
                           child: const Icon(Icons.notifications_outlined,
                               size: 20, color: AppColors.textMid),
                         ),
                         Positioned(
-                          top: 6,
-                          right: 6,
+                          top: 6, right: 6,
                           child: Container(
-                            width: 8,
-                            height: 8,
+                            width: 8, height: 8,
                             decoration: const BoxDecoration(
                                 color: AppColors.soldOut,
                                 shape: BoxShape.circle),
@@ -180,16 +178,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 10),
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 38, height: 38,
                       decoration: const BoxDecoration(
                           color: AppColors.primary, shape: BoxShape.circle),
-                      child: const Center(
-                        child: Text('MB',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold)),
+                      child: Center(
+                        child: Text(
+                          AppStore().currentUser.isNotEmpty
+                              ? AppStore().currentUser.substring(0, 2).toUpperCase()
+                              : 'MB',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -205,10 +206,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => Navigator.push(
-                            context,
+                        onTap: () => Navigator.push(context,
                             MaterialPageRoute(
-                                builder: (_) => const SearchScreen())),
+                                builder: (_) => SearchScreen())),
                         child: Container(
                           height: 46,
                           decoration: BoxDecoration(
@@ -239,8 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     GestureDetector(
                       onTap: _showGenreFilter,
                       child: Container(
-                        width: 46,
-                        height: 46,
+                        width: 46, height: 46,
                         decoration: BoxDecoration(
                           color: AppColors.primarySurface,
                           borderRadius: BorderRadius.circular(14),
@@ -254,32 +253,57 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── Featured Banner ──
+            // ── On Sale Today Banner (Responsive) ──
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
-                child: SizedBox(
-                  height: 245,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount:
-                        featuredBooks.isNotEmpty ? featuredBooks.length : 1,
-                    itemBuilder: (_, i) {
-                      final book = featuredBooks.isNotEmpty
-                          ? featuredBooks[i]
-                          : allBooks[0];
-                      return FeaturedBookCard(
-                          book: book, onTap: () => _openDetail(book));
-                    },
-                  ),
-                ),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: isWide
+                    // Wide (web/tablet): grid layout
+                    ? GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 1.8,
+                        ),
+                        itemCount: featuredBooks.isNotEmpty
+                            ? featuredBooks.length
+                            : 1,
+                        itemBuilder: (_, i) {
+                          final book = featuredBooks.isNotEmpty
+                              ? featuredBooks[i]
+                              : allBooks[0];
+                          return FeaturedBookCard(
+                              book: book, onTap: () => _openDetail(book));
+                        },
+                      )
+                    // Mobile: horizontal scroll
+                    : SizedBox(
+                        height: 245,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: featuredBooks.isNotEmpty
+                              ? featuredBooks.length
+                              : 1,
+                          itemBuilder: (_, i) {
+                            final book = featuredBooks.isNotEmpty
+                                ? featuredBooks[i]
+                                : allBooks[0];
+                            return FeaturedBookCard(
+                                book: book, onTap: () => _openDetail(book));
+                          },
+                        ),
+                      ),
               ),
             ),
 
             // ── You Might Like ──
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -289,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                             color: AppColors.textDark)),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => _showAllBooks('You Might Like', _recommendedBooks),
                       child: const Text('More',
                           style: TextStyle(
                               color: AppColors.primary, fontSize: 13)),
@@ -302,27 +326,49 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SizedBox(
-                  height: 220,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.zero,
-                    itemCount: _recommendedBooks.length,
-                    itemBuilder: (_, i) {
-                      final book = _recommendedBooks[i];
-                      return Container(
-                        width: 140,
-                        margin: const EdgeInsets.only(right: 14),
-                        child: BookCard(
-                          book: book,
-                          onTap: () => _openDetail(book),
-                          onWishlist: () => _toggleWishlist(book),
-                          wishlisted: _store.isWishlisted(book.id),
+                child: isWide
+                    ? GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: (screenW / 160).floor().clamp(2, 6),
+                          mainAxisSpacing: 14,
+                          crossAxisSpacing: 14,
+                          childAspectRatio: 0.62,
                         ),
-                      );
-                    },
-                  ),
-                ),
+                        itemCount: _recommendedBooks.length,
+                        itemBuilder: (_, i) {
+                          final book = _recommendedBooks[i];
+                          return BookCard(
+                            book: book,
+                            onTap: () => _openDetail(book),
+                            onWishlist: () => _toggleWishlist(book),
+                            wishlisted: _store.isWishlisted(book.id),
+                          );
+                        },
+                      )
+                    : SizedBox(
+                        height: 220,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.zero,
+                          itemCount: _recommendedBooks.length,
+                          itemBuilder: (_, i) {
+                            final book = _recommendedBooks[i];
+                            return Container(
+                              width: 140,
+                              margin: const EdgeInsets.only(right: 14),
+                              child: BookCard(
+                                book: book,
+                                onTap: () => _openDetail(book),
+                                onWishlist: () => _toggleWishlist(book),
+                                wishlisted: _store.isWishlisted(book.id),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
               ),
             ),
 
@@ -339,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.bold,
                             color: AppColors.textDark)),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => _showAllBooks('Popular Books', _popularBooks),
                       child: const Text('More',
                           style: TextStyle(
                               color: AppColors.primary, fontSize: 13)),
@@ -364,8 +410,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   childCount: _popularBooks.length,
                 ),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isWide ? (screenW / 180).floor().clamp(3, 6) : 2,
                   mainAxisSpacing: 14,
                   crossAxisSpacing: 14,
                   childAspectRatio: 0.62,
