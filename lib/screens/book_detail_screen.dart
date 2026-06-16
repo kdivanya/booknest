@@ -25,7 +25,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   void _toggleWishlist() => setState(() {
-        _store.toggleWishlist(widget.book.id);
+        _store.toggleWishlist(widget.book.id, title: widget.book.title, author: widget.book.author, price: widget.book.price);
         _wishlisted = _store.isWishlisted(widget.book.id);
       });
 

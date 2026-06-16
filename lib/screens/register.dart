@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import 'main_shell.dart';
+import '../models/cart_model.dart';
+import '../services/firebase_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -33,10 +36,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainShell()),
-    );
+    // perform Firebase registration
+    _performRegister();
+  }
+
+  Future<void> _performRegister() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    try {
+      final cred = await FirebaseService.instance.register(
+        name: name,
+        email: email,
+        password: password,
+      );
+
+      final user = cred.user;
+      if (user != null) {
+        AppStore().currentEmail = user.email ?? email;
+        AppStore().currentUser = name.isNotEmpty ? name : (user.email?.split('@').first ?? '');
+        AppStore().currentUid = user.uid;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainShell()),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Registration failed')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration failed')),
+      );
+    }
   }
 
   @override

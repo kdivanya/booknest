@@ -37,104 +37,164 @@ class _WishlistScreenState extends State<WishlistScreen> {
               child: ValueListenableBuilder<Set<String>>(
                 valueListenable: _store.wishlist,
                 builder: (_, wishlistIds, __) {
-                  final books = allBooks
-                      .where((b) => wishlistIds.contains(b.id))
-                      .toList();
-                  return books.isEmpty
-                      ? const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.favorite_border_rounded,
-                                  size: 64, color: AppColors.primaryLighter),
-                              SizedBox(height: 14),
-                              Text('No books in wishlist',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: AppColors.textMid,
-                                      fontWeight: FontWeight.w500)),
-                              SizedBox(height: 6),
-                              Text('Tap ♡ on any book to save it here',
-                                  style: TextStyle(
-                                      fontSize: 13, color: AppColors.textHint)),
-                            ],
+                  if (wishlistIds.isEmpty) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.favorite_border_rounded,
+                              size: 64, color: AppColors.primaryLighter),
+                          SizedBox(height: 14),
+                          Text('No books in wishlist',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textMid,
+                                  fontWeight: FontWeight.w500)),
+                          SizedBox(height: 6),
+                          Text('Tap ♡ on any book to save it here',
+                              style: TextStyle(
+                                  fontSize: 13, color: AppColors.textHint)),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final ids = wishlistIds.toList();
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: ids.length,
+                    itemBuilder: (_, i) {
+                      final id = ids[i];
+                        final idx = allBooks.indexWhere((b) => b.id == id);
+                        final Book? book = idx != -1 ? allBooks[idx] : null;
+
+                        // If local book exists, show full card
+                        if (book != null) {
+                        return GestureDetector(
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => BookDetailScreen(book: book))),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.bgWhite,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    book.coverUrl,
+                                    width: 56,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 56,
+                                      height: 72,
+                                      color: AppColors.primarySurface,
+                                      child: const Center(
+                                        child: Icon(Icons.menu_book_rounded,
+                                            size: 28,
+                                            color: AppColors.primaryLighter),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(book.title,
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textDark)),
+                                      Text(book.author,
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.textLight)),
+                                      const SizedBox(height: 6),
+                                      Text('Rp ${_fmt(book.price)}',
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.primary)),
+                                    ],
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => setState(() => _store.toggleWishlist(book.id, title: book.title, author: book.author, price: book.price)),
+                                  child: const Icon(Icons.favorite_rounded,
+                                      color: Colors.red, size: 22),
+                                ),
+                              ],
+                            ),
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: books.length,
-                          itemBuilder: (_, i) {
-                            final book = books[i];
-                            return GestureDetector(
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          BookDetailScreen(book: book))),
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.bgWhite,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Image.network(
-                                        book.coverUrl,
-                                        width: 56,
-                                        height: 72,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(
-                                          width: 56,
-                                          height: 72,
-                                          color: AppColors.primarySurface,
-                                          child: const Center(
-                                            child: Icon(Icons.menu_book_rounded,
-                                                size: 28,
-                                                color: AppColors.primaryLighter),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(book.title,
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppColors.textDark)),
-                                          Text(book.author,
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: AppColors.textLight)),
-                                          const SizedBox(height: 6),
-                                          Text('Rp ${_fmt(book.price)}',
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppColors.primary)),
-                                        ],
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () => setState(
-                                          () => _store.toggleWishlist(book.id)),
-                                      child: const Icon(Icons.favorite_rounded,
-                                          color: Colors.red, size: 22),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
                         );
+                      }
+
+                      // Fallback: render using DB-provided details
+                      final details = _store.wishlistData[id];
+                      final title = details?['bookTitle'] ?? 'Unknown Title';
+                      final author = details?['bookAuthor'] ?? '';
+                      final price = (details?['bookPrice'] is num) ? (details!['bookPrice'] as num).toDouble() : 0.0;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgWhite,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 72,
+                              color: AppColors.primarySurface,
+                              child: const Center(
+                                child: Icon(Icons.menu_book_rounded,
+                                    size: 28, color: AppColors.primaryLighter),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(title,
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textDark)),
+                                  Text(author,
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textLight)),
+                                  const SizedBox(height: 6),
+                                  Text('Rp ${_fmt(price)}',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.primary)),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => setState(() => _store.toggleWishlist(id, title: title, author: author, price: price)),
+                              child: const Icon(Icons.favorite_rounded,
+                                  color: Colors.red, size: 22),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
             ),
@@ -147,3 +207,4 @@ class _WishlistScreenState extends State<WishlistScreen> {
   String _fmt(double p) => p.toStringAsFixed(0).replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 }
+

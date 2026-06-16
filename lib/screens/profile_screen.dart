@@ -2,6 +2,7 @@ import 'auth_gate_screen.dart';
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../models/cart_model.dart';
+import '../services/firebase_service.dart';
 import 'order_history_screen.dart';
 
 // STATELESS WIDGET — reads live data from AppStore
@@ -165,11 +166,18 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     // Log Out
                     GestureDetector(
-                      onTap: () => Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const AuthGateScreen()),
-                          (_) => false),
+                      onTap: () async {
+                        // Sign out from Firebase and clear local session
+                        try {
+                          await FirebaseService.instance.signOut();
+                        } catch (_) {}
+                        AppStore().clearSession();
+                        Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const AuthGateScreen()),
+                            (_) => false);
+                      },
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 16),

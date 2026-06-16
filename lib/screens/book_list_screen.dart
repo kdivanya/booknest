@@ -25,7 +25,7 @@ class _BookListScreenState extends State<BookListScreen> {
   }
 
   void _toggleWishlist(Book book) {
-    setState(() => _store.toggleWishlist(book.id));
+    setState(() => _store.toggleWishlist(book.id, title: book.title, author: book.author, price: book.price));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(_store.isWishlisted(book.id)
@@ -110,3 +110,4 @@ class _BookListScreenState extends State<BookListScreen> {
     );
   }
 }
+

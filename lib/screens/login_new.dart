@@ -67,26 +67,6 @@ class _LoginScreenState extends State<LoginScreen> {
         // Load wishlist dengan book details dari Firebase
         final wishlistData = await FirebaseService.instance.getWishlist(user.uid);
         AppStore().setWishlistFromDb(wishlistData);
-
-        // Load cart dari Firebase
-        final cartData = await FirebaseService.instance.getCart(user.uid);
-        AppStore().setCartFromDb(cartData);
-
-        // Load orders dari Firebase
-        final ordersData = await FirebaseService.instance.getOrders(user.uid);
-        AppStore().setOrdersFromDb(ordersData);
-
-        final wishlistCount = AppStore().wishlistCount;
-        final orderCount = AppStore().orderCount;
-        final cartCount = AppStore().cartCount;
-        print('[DEBUG] Login loaded wishlist=$wishlistCount orders=$orderCount cart=$cartCount');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Loaded: $wishlistCount wishlist, $orderCount orders, $cartCount cart items'),
-            backgroundColor: AppColors.primary,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
       }
 
       Navigator.pushReplacement(
