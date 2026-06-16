@@ -35,9 +35,3 @@ flutter run
 ```
 
 > Untuk konfigurasi Firebase, lihat [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md).
-
-## Tautan
-
-- 📦 [Source Code](https://github.com/kur24nia/booknest)
-- 📲 [Download APK](#)
-- 🎥 [Video Showcase](#)
