@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     if (password.length < 6) {
-      _showError('Password must be at least 6 characters.');
+      _showError('Password must be at least 8 characters.');
       return;
     }
 
