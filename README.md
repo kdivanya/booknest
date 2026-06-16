@@ -1,17 +1,43 @@
-# booknest
+# 📚 BookNest
 
-A new Flutter project.
+> Your Cozy Digital Bookstore — aplikasi mobile belanja buku berbasis Flutter & Firebase.
 
-## Getting Started
+**Mata Kuliah:** Aplikasi Perangkat Bergerak  
+**Universitas Telkom Jakarta, 2026**
 
-This project is a starting point for a Flutter application.
+## Tim
 
-A few resources to get you started if this is your first Flutter project:
+| Nama | NIM | Peran |
+|------|-----|-------|
+| Kurnia Ramadani | 103062330042 | UI/UX & Halaman Utama |
+| Allyssa Humayra | 103062330044 | Autentikasi & Manajemen Akun |
+| Kareen Divanya Permadhie | 103062300050 | Fitur Transaksi |
+| Aulia Karenovsqhie Pratasik | 103062300059 | Pencarian & Wishlist |
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Fitur
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Splash screen, autentikasi (register/login/forgot password), beranda dengan filter genre, pencarian buku, detail buku (synopsis/reviews/details), wishlist, keranjang belanja, checkout, riwayat pesanan, dan manajemen profil.
+
+## Tech Stack
+
+- **Flutter** — cross-platform Android & iOS
+- **Firebase Authentication** — login via email/password
+- **Firebase Realtime Database** — sinkronisasi data real-time
+- **State management** — ValueNotifier + Singleton (`AppStore`)
+
+## Cara Menjalankan
+
+```bash
+git clone https://github.com/kur24nia/booknest.git
+cd booknest
+flutter pub get
+flutter run
+```
+
+> Untuk konfigurasi Firebase, lihat [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md).
+
+## Tautan
+
+- 📦 [Source Code](https://github.com/kur24nia/booknest)
+- 📲 [Download APK](#)
+- 🎥 [Video Showcase](#)
